@@ -1,5 +1,17 @@
 export const MAX_CONTENT = 150000;
 export const ID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
+export function defaultProfile(config) {
+  return {version:1, about:`${config.title}の日記。\n${config.description}`, name:'', bio:`${config.title}の日記。\n\n${config.description}`};
+}
+export function validateProfile(input) {
+  if (!input || input.version !== 1) throw new Error('プロフィールの形式が不正');
+  const profile = {version:1};
+  for (const [key, max] of Object.entries({about:2000, name:80, bio:30000})) {
+    if (typeof input[key] !== 'string' || input[key].length > max) throw new Error('プロフィールの文字数または形式が不正');
+    profile[key] = input[key].replace(/\r\n?/g, '\n');
+  }
+  return profile;
+}
 export function validatePost(input) {
   if (!input || typeof input !== 'object' || !ID.test(input.id)) throw new Error('記事IDが不正');
   const result = {};

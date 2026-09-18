@@ -107,6 +107,8 @@ button, input, textarea { font: inherit; }
 .archive-list li { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--border); }
 .archive-date { color: var(--muted-foreground); font-family: var(--font-serif); font-size: 0.9rem; }
 .profile-copy { max-width: 40rem; font-family: var(--font-serif); font-size: 1.02rem; }
+.profile-copy p, .about-copy p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.profile-name { margin-bottom: 1.5rem; }
 .site-footer { display: flex; justify-content: space-between; gap: 1rem; padding: 1.3rem 0 2.7rem; border-top: 1px solid var(--border); color: var(--muted-foreground); font-size: 0.78rem; }
 
 .admin-shell { width: min(100% - 2rem, 72rem); margin: 0 auto; padding: 2rem 0 4rem; }
@@ -161,6 +163,14 @@ input[type=checkbox] { width: 1rem; height: 1rem; accent-color: var(--foreground
 #preview { margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 2rem; }
 .pagination { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; font-size: .86rem; }
 .back-link { margin-top: 3rem; }
+.admin-nav { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.5rem; }
+.admin-nav button[aria-current="page"] { background: var(--secondary); border-color: var(--foreground); }
+.short-textarea { min-height: 8rem; }
+.temporary-login, .recovery-help { margin-top: 2rem; padding-top: 1.2rem; border-top: 1px solid var(--border); }
+.temporary-login summary { cursor: pointer; font-size: .86rem; }
+.recovery-help button { margin-top: .8rem; font-size: .86rem; }
+.profile-preview { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
+.profile-preview > .sidebar-title:not(:first-child) { margin-top: 2.5rem; }
 .post-body, .post-title, .profile-copy { overflow-wrap: anywhere; }
 @media (max-width: 760px) {
   .admin-row { grid-template-columns: 1fr auto; }

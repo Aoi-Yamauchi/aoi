@@ -1,4 +1,4 @@
-import { validatePost, comparePosts, ID } from './model.mjs';
+import { validatePost, validateProfile, defaultProfile, comparePosts, ID } from './model.mjs';
 const enc = new TextEncoder(), dec = new TextDecoder('utf-8', { fatal: true });
 export const encode64 = text => { let s = ''; for (const b of enc.encode(text)) s += String.fromCharCode(b); return btoa(s); };
 export const decode64 = text => dec.decode(Uint8Array.from(atob(text.replace(/\s/g,'')), c => c.charCodeAt(0)));
@@ -11,7 +11,9 @@ export class GitHubError extends Error {
 export class GitHubStore {
   #token;
   constructor(config, token, fetcher = fetch) {
-    this.config = config; this.#token = token; this.fetcher = (...args) => fetcher(...args);
+    this.config = config; this.#token = token;
+    // Keep the native browser fetch receiver independent of this store.
+    this.fetcher = (...args) => fetcher(...args);
     this.root = `/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.sourceRepo)}`;
   }
   disconnect() { this.#token = ''; }
@@ -54,6 +56,22 @@ export class GitHubStore {
     const post = validatePost(value);
     return this.request(`/contents/content/posts/${post.id}.json`, 'PUT', {
       message:`diary: ${sha ? 'update' : 'create'} ${post.id}`, content:encode64(JSON.stringify(post,null,2)+'\n'), branch:this.config.branch, ...(sha ? {sha} : {})
+    });
+  }
+  async readProfile() {
+    const tree = await this.request(`/git/trees/${encodeURIComponent(this.config.branch)}?recursive=1`);
+    if (tree.truncated) throw new Error('原本の取得上限を超えたためプロフィールを読み込めない。');
+    const entry = tree.tree.find(e => e.path === 'content/profile.json');
+    if (!entry) return {profile:defaultProfile(this.config),sha:null};
+    if (entry.type !== 'blob') throw new Error('プロフィールの保存先が不正。');
+    const blob = await this.request(`/git/blobs/${entry.sha}`);
+    if (blob.encoding !== 'base64') throw new Error('プロフィールの形式を読み取れない。');
+    return {profile:validateProfile(JSON.parse(decode64(blob.content))),sha:entry.sha};
+  }
+  async saveProfile(value, sha) {
+    const profile = validateProfile(value);
+    return this.request('/contents/content/profile.json', 'PUT', {
+      message:'diary: update about and profile',content:encode64(JSON.stringify(profile,null,2)+'\n'),branch:this.config.branch,...(sha ? {sha} : {})
     });
   }
   async remove(value, sha) {
