@@ -1,0 +1,30 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self' https://api.github.com; object-src 'none'; base-uri 'none'; form-action 'none'"><meta name="referrer" content="no-referrer"><title>管理画面 — Aoi</title><meta name="description" content="日々の出来事や、そのとき考えたことを記録する。"><meta name="robots" content="noindex,nofollow"><link rel="stylesheet" href="/aoi/assets/style.css"><link rel="alternate" type="application/rss+xml" title="RSS" href="/aoi/rss.xml"><script type="module" src="/aoi/assets/admin.mjs"></script></head><body><main class="admin-shell"><header class="admin-header"><a class="admin-brand" href="/aoi/">Aoi</a><div class="toolbar"><a href="/aoi/" target="_blank" rel="noopener">サイトを見る</a><button id="disconnect" hidden>接続を解除</button></div></header>
+<p id="notice" role="status" aria-live="polite"></p>
+<section id="login" class="editor-card">
+  <h1 class="editor-heading">日記を管理する</h1>
+  <p>GitHubの専用トークンで接続すると、日記を書いたり編集したりできる。</p>
+  <form id="login-form" class="editor-form">
+    <label class="field-group"><span class="field-label">GitHubトークン</span><input id="token" type="password" autocomplete="off" spellcheck="false" required aria-describedby="token-help"></label>
+    <p id="token-help" class="help">原本リポジトリへの Contents「Read and write」権限が必要。トークンはこのタブを閉じるか再読み込みすると消える。</p>
+    <div class="editor-actions"><button class="primary" type="submit">接続する</button></div>
+  </form>
+</section>
+<section id="dashboard" hidden>
+  <div class="admin-title-row"><h1>日記</h1><button id="new-post" class="primary">日記を書く</button></div>
+  <div class="toolbar list-toolbar"><label>表示 <select id="filter"><option value="all">すべて</option><option value="published">公開</option><option value="draft">下書き</option></select></label><label class="search-field">検索 <input id="search" type="search" placeholder="題名・本文・分類"></label><button id="refresh">再読み込み</button><button id="export">Markdown一括出力</button><a id="actions-link" target="_blank" rel="noopener">公開の反映状況</a></div>
+  <p class="help">一括出力は、下書きを含む全記事をMarkdownのZIPファイルにする。</p>
+  <div id="post-list" class="admin-list"></div>
+</section>
+<section id="editor" class="editor-card" hidden>
+  <div class="admin-title-row"><h1 id="editor-title">日記を書く</h1><button id="back">一覧へ戻る</button></div>
+  <form id="editor-form" class="editor-form">
+    <label class="field-group"><span class="field-label">題名</span><input id="title" required maxlength="200"></label>
+    <div class="field-row"><label class="field-group"><span class="field-label">日付</span><input id="entry-date" type="date" required></label><label class="field-group"><span class="field-label">分類</span><input id="category" maxlength="80" placeholder="日記"></label></div>
+    <label class="field-group"><span class="field-label">本文</span><textarea id="content" rows="18" maxlength="150000" placeholder="ここに、その日のことを書く。"></textarea></label>
+    <div class="publish-row"><label><input id="published" type="checkbox"> サイトに公開する</label><span id="save-state" class="help"></span></div>
+    <p class="help">保存後、公開サイトへの反映には数分かかる。下書きの本文は公開サイトへ送られない。</p>
+    <div class="editor-actions"><button id="delete-post" type="button" class="danger" hidden>削除</button><button id="preview-toggle" type="button">本文を確認</button><button id="save" type="submit" class="primary">保存する</button></div>
+  </form>
+  <section id="preview" hidden aria-label="本文の確認"><h2 class="post-title" id="preview-title"></h2><div id="preview-content" class="post-body"></div></section>
+</section>
+</main></body></html>
