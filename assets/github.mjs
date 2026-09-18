@@ -11,7 +11,7 @@ export class GitHubError extends Error {
 export class GitHubStore {
   #token;
   constructor(config, token, fetcher = fetch) {
-    this.config = config; this.#token = token; this.fetcher = fetcher;
+    this.config = config; this.#token = token; this.fetcher = (...args) => fetcher(...args);
     this.root = `/repos/${encodeURIComponent(config.owner)}/${encodeURIComponent(config.sourceRepo)}`;
   }
   disconnect() { this.#token = ''; }
