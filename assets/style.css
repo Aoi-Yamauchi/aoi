@@ -166,7 +166,13 @@ input[type=checkbox] { width: 1rem; height: 1rem; accent-color: var(--foreground
 #notice { min-height: 1.8em; margin: 1rem 0; overflow-wrap: anywhere; }
 #preview { margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 2rem; }
 .pagination { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; font-size: .86rem; }
-.back-link { margin-top: 3rem; }
+.post-navigation { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(1rem, 3vw, 2rem); max-width: 42rem; margin-top: 3rem; font-family: var(--font-serif); font-size: .95rem; font-weight: 600; }
+.post-navigation a { display: flex; align-items: center; gap: .5rem; min-width: 0; padding: .6rem 0; text-decoration: none; }
+.post-navigation a:hover, .post-navigation a:focus-visible { text-decoration: underline; text-decoration-thickness: 1px; }
+.post-navigation-previous { grid-column: 1; }
+.post-navigation-next { grid-column: 2; justify-content: flex-end; text-align: right; }
+.post-navigation-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.post-navigation [aria-hidden] { flex: none; }
 .admin-nav { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.5rem; }
 .admin-nav button[aria-current="page"] { background: var(--secondary); border-color: var(--foreground); }
 .short-textarea { min-height: 8rem; }
