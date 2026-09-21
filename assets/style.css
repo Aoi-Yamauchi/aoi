@@ -98,6 +98,7 @@ button, input, textarea { font: inherit; }
 .sidebar { align-self: start; position: sticky; top: 2rem; padding-left: 1.6rem; border-left: 1px solid var(--border); font-size: 0.86rem; }
 .sidebar-section + .sidebar-section { margin-top: 2.2rem; }
 .sidebar ul { display: grid; gap: 0.55rem; margin: 0; padding: 0; list-style: none; }
+.sidebar a { overflow-wrap: anywhere; }
 
 .empty-state { max-width: 38rem; padding: 2.25rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .empty-state h2 { margin: 0 0 0.45rem; font-family: var(--font-serif); font-size: 1.35rem; font-weight: 500; }
@@ -181,9 +182,21 @@ input[type=checkbox] { width: 1rem; height: 1rem; accent-color: var(--foreground
 .recovery-help button { margin-top: .8rem; font-size: .86rem; }
 .profile-preview { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); }
 .profile-preview > .sidebar-title:not(:first-child) { margin-top: 2.5rem; }
+.links-editor { display: grid; gap: .8rem; }
+.links-editor > h2 { margin: 0; }
+.links-editor > button { justify-self: start; }
+.profile-links { display: grid; gap: 1rem; }
+.profile-link-row { min-width: 0; margin: 0; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius); }
+.profile-link-row legend { padding: 0 .35rem; font-size: .8rem; color: var(--muted-foreground); }
+.link-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 1rem; }
+.link-fields input { min-width: 0; }
+.link-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; font-size: .8rem; }
+.link-remove { margin-left: auto; color: var(--destructive); }
+.links-preview { display: grid; gap: .55rem; padding: 0; list-style: none; overflow-wrap: anywhere; }
 .post-body, .post-title, .profile-copy { overflow-wrap: anywhere; }
 @media (max-width: 760px) {
   .admin-row { grid-template-columns: 1fr auto; }
+  .link-fields { grid-template-columns: minmax(0, 1fr); }
   .admin-row .archive-date { grid-column: 1; }
   .admin-row .admin-row-title { grid-row: 2; grid-column: 1; }
   .admin-row .status-pill { display: inline-block; grid-row: 1; grid-column: 2; }

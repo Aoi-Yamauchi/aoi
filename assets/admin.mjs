@@ -1,7 +1,7 @@
 import { GitHubStore } from './github.mjs';
 import { PasswordVault, validatePassword } from './vault.mjs';
 import { markdownZip } from './export.mjs';
-import { today, validateConfig, validateProfile } from './model.mjs';
+import { today, validateConfig, validateProfile, validateLinks, MAX_LINKS } from './model.mjs';
 import { initBodyEditor } from './editor.mjs';
 const $ = id => document.getElementById(id);
 const bodyEditor = initBodyEditor($('content'), $('content-count'));
@@ -33,7 +33,7 @@ function clearSession() {
   store?.disconnect(); store = null; rows = []; current = null; profileCurrent = null; dirty = false;
   for (const id of ['editor-form','profile-form','password-form','unlock-form','setup-form','temporary-form']) $(id).reset();
   bodyEditor.refresh();
-  for (const id of ['preview-content','preview-title','post-list','about-preview','profile-name-preview','bio-preview','site-title-preview']) $(id).replaceChildren();
+  for (const id of ['preview-content','preview-title','post-list','about-preview','profile-name-preview','bio-preview','site-title-preview','profile-links','links-preview']) $(id).replaceChildren();
   $('search').value = ''; $('filter').value = 'all';
 }
 async function connect(token, beforeEnter) {
@@ -74,7 +74,7 @@ async function operation(action) {
   const controls = [...document.querySelectorAll('button,input,textarea,select')];
   const states = controls.map(el => el.disabled); controls.forEach(el => el.disabled = true);
   try { await action(); } catch (error) { notice(error.message, true); }
-  finally { controls.forEach((el,i) => el.disabled = states[i]); busy = false; }
+  finally { controls.forEach((el,i) => el.disabled = states[i]); busy = false; updateLinkControls(); }
 }
 function renderPublishState() {
   const published = current?.post.status === 'published';
@@ -134,6 +134,7 @@ $('nav-profile').addEventListener('click', () => {
     profileCurrent = latest;
     $('site-title').value = latest.profile.siteTitle ?? config.title;
     $('about-copy').value = latest.profile.about; $('profile-name').value = latest.profile.name; $('profile-bio').value = latest.profile.bio;
+    renderProfileLinks(latest.profile.links ?? []);
     $('profile-save-state').textContent = ''; $('profile-preview').hidden = true; $('profile-preview-toggle').textContent = '表示を確認';
     dirty = false; view('profile'); notice('');
   });
@@ -150,19 +151,89 @@ $('forget-device').addEventListener('click', () => {
   if (!canLeave() || !confirm('このブラウザのログイン設定を削除してログアウトする？ 次回はGitHubトークンでの登録が必要になる。記事は消えない。')) return;
   operation(async () => { vault.forget(); clearSession(); showLogin(); notice('このブラウザの登録を削除した。'); });
 });
-$('profile-form').addEventListener('input', () => { dirty = true; $('profile-save-state').textContent = '未保存'; });
+function markProfileDirty() {
+  dirty = true; $('profile-save-state').textContent = '未保存';
+  $('profile-preview').hidden = true; $('profile-preview-toggle').textContent = '表示を確認';
+}
+function updateLinkControls() {
+  const links = [...$('profile-links').children];
+  $('add-profile-link').disabled = busy || links.length >= MAX_LINKS;
+  links.forEach((row, index) => {
+    row.querySelector('legend').textContent = `リンク ${index + 1}`;
+    row.querySelector('.link-up').disabled = busy || index === 0;
+    row.querySelector('.link-down').disabled = busy || index === links.length - 1;
+    row.querySelector('.link-remove').disabled = busy;
+  });
+}
+function appendProfileLink(link = {name:'',url:''}) {
+  const row = document.createElement('fieldset'); row.className = 'profile-link-row';
+  const legend = document.createElement('legend'); row.append(legend);
+  const fields = document.createElement('div'); fields.className = 'link-fields';
+  for (const [key, text, max] of [['name','表示名',100],['url','URL',2048]]) {
+    const label = document.createElement('label'); label.className = 'field-group';
+    const caption = document.createElement('span'); caption.className = 'field-label'; caption.textContent = text;
+    const input = document.createElement('input'); input.className = 'link-'+key;
+    input.type = key === 'url' ? 'url' : 'text'; input.required = true; input.maxLength = max; input.value = link[key];
+    if (key === 'url') { input.placeholder = 'https://example.com/'; input.spellcheck = false; input.autocapitalize = 'none'; }
+    label.append(caption,input); fields.append(label);
+  }
+  const actions = document.createElement('div'); actions.className = 'link-actions';
+  for (const [action,text] of [['up','上へ'],['down','下へ'],['remove','削除']]) {
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'link-'+action; button.textContent = text;
+    button.addEventListener('click', () => {
+      if (busy) return;
+      if (action === 'up') {
+        if (!row.previousElementSibling) return;
+        row.parentNode.insertBefore(row,row.previousElementSibling);
+      } else if (action === 'down') {
+        if (!row.nextElementSibling) return;
+        row.parentNode.insertBefore(row.nextElementSibling,row);
+      } else {
+        const next = row.nextElementSibling ?? row.previousElementSibling;
+        row.remove(); updateLinkControls();
+        (next?.querySelector('.link-name') ?? $('add-profile-link')).focus();
+      }
+      markProfileDirty(); updateLinkControls();
+      if (action !== 'remove') row.querySelector('.link-name').focus();
+    });
+    actions.append(button);
+  }
+  row.append(fields,actions); $('profile-links').append(row); updateLinkControls();
+  return row;
+}
+function renderProfileLinks(links) {
+  $('profile-links').replaceChildren();
+  for (const link of links) appendProfileLink(link);
+  updateLinkControls();
+}
+function readProfileLinks() {
+  return [...$('profile-links').children].map(row => ({name:row.querySelector('.link-name').value,url:row.querySelector('.link-url').value}));
+}
+$('add-profile-link').addEventListener('click', () => {
+  if (busy || $('profile-links').children.length >= MAX_LINKS) return;
+  appendProfileLink().querySelector('.link-name').focus(); markProfileDirty();
+});
+$('profile-form').addEventListener('input', markProfileDirty);
 $('profile-form').addEventListener('submit', e => { e.preventDefault(); operation(async () => {
-  const profile = validateProfile({version:1,siteTitle:$('site-title').value,about:$('about-copy').value,name:$('profile-name').value.trim(),bio:$('profile-bio').value});
-  notice('プロフィールを保存している…');
+  const profile = validateProfile({version:1,siteTitle:$('site-title').value,about:$('about-copy').value,name:$('profile-name').value.trim(),bio:$('profile-bio').value,links:readProfileLinks()});
+  notice('プロフィールとLINKSを保存している…');
   const result = await store.saveProfile(profile,profileCurrent?.sha);
   profileCurrent = {profile,sha:result.content.sha}; dirty = false; $('profile-save-state').textContent = '保存済み';
   config.title = profile.siteTitle; $('site-title').value = profile.siteTitle;
+  renderProfileLinks(profile.links);
   $('admin-brand').textContent = profile.siteTitle; document.title = `管理画面 — ${profile.siteTitle}`;
-  notice('日記の名前・ABOUT・プロフィールを原本に保存した。公開サイトへの反映には数分かかる。');
+  notice('日記の名前・ABOUT・プロフィール・LINKSを原本に保存した。公開サイトへの反映には数分かかる。');
 }); });
 $('profile-preview-toggle').addEventListener('click', () => {
-  $('profile-preview').hidden = !$('profile-preview').hidden;
-  $('profile-preview-toggle').textContent = $('profile-preview').hidden ? '表示を確認' : '確認を閉じる';
+  if (!$('profile-preview').hidden) { $('profile-preview').hidden = true; $('profile-preview-toggle').textContent = '表示を確認'; return; }
+  let links;
+  try { links = validateLinks(readProfileLinks()); } catch (error) { notice(error.message,true); return; }
+  $('links-preview').replaceChildren();
+  for (const link of [...links,{name:'RSS',url:new URL('rss.xml',config.siteUrl).href},{name:'管理画面',url:new URL('admin/',config.siteUrl).href}]) {
+    const item = document.createElement('li'), a = document.createElement('a');
+    a.textContent = link.name; a.href = link.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; item.append(a); $('links-preview').append(item);
+  }
+  $('profile-preview').hidden = false; $('profile-preview-toggle').textContent = '確認を閉じる';
   $('site-title-preview').textContent = $('site-title').value.trim();
   plainPreview('about-preview',$('about-copy').value); plainPreview('bio-preview',$('profile-bio').value);
   $('profile-name-preview').textContent = $('profile-name').value.trim(); $('profile-name-preview').hidden = !$('profile-name-preview').textContent;

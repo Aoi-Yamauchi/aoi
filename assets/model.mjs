@@ -1,5 +1,19 @@
 export const MAX_CONTENT = 150000;
+export const MAX_LINKS = 50;
 export const ID = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
+export function validateLinks(input) {
+  if (!Array.isArray(input) || input.length > MAX_LINKS) throw new Error(`LINKSは${MAX_LINKS}件まで追加できる。`);
+  return input.map((link, index) => {
+    const label = `LINKSの${index + 1}件目`;
+    if (!link || typeof link.name !== 'string' || !link.name.trim() || link.name.length > 100 || /[\u0000-\u001f\u007f]/.test(link.name)) throw new Error(`${label}の表示名は1〜100文字で、改行せずに入力してほしい。`);
+    if (typeof link.url !== 'string' || link.url.length > 2048) throw new Error(`${label}のURLは2048文字以内で入力してほしい。`);
+    const url = link.url.trim();
+    let parsed;
+    try { parsed = new URL(url); } catch { throw new Error(`${label}のURLを確認してほしい。https:// または http:// から入力する。`); }
+    if (!/^https?:\/\//i.test(url) || /[\s\u0000-\u001f\u007f\\]/.test(url) || !['http:','https:'].includes(parsed.protocol) || !parsed.hostname || parsed.username || parsed.password) throw new Error(`${label}にはhttps:// または http:// で始まる、ログイン情報を含まないURLを入力してほしい。`);
+    return {name:link.name.trim(), url};
+  });
+}
 export function defaultProfile(config) {
   return {version:1, about:`${config.title}の日記。\n${config.description}`, name:'', bio:`${config.title}の日記。\n\n${config.description}`};
 }
@@ -15,6 +29,7 @@ export function validateProfile(input) {
     if (typeof input.siteTitle !== 'string' || !input.siteTitle.trim() || input.siteTitle.length > 100 || /[\u0000-\u001f\u007f]/.test(input.siteTitle)) throw new Error('日記の名前は1〜100文字で、改行せずに入力してほしい。');
     profile.siteTitle = input.siteTitle.trim();
   }
+  if (input.links !== undefined) profile.links = validateLinks(input.links);
   return profile;
 }
 export function validatePost(input) {
