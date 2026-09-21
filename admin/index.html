@@ -33,9 +33,9 @@
     <label class="field-group"><span class="field-label">題名</span><input id="title" required maxlength="200"></label>
     <div class="field-row"><label class="field-group"><span class="field-label">日付</span><input id="entry-date" type="date" required></label><label class="field-group"><span class="field-label">分類</span><input id="category" maxlength="80" placeholder="日記"></label></div>
     <label class="field-group"><span class="field-label">本文</span><textarea id="content" rows="18" maxlength="150000" placeholder="ここに、その日のことを書く。"></textarea></label>
-    <div class="publish-row"><label><input id="published" type="checkbox"> サイトに公開する</label><span id="save-state" class="help"></span></div>
-    <p class="help">保存後、公開サイトへの反映には数分かかる。下書きの本文は公開サイトへ送られない。</p>
-    <div class="editor-actions"><button id="delete-post" type="button" class="danger" hidden>削除</button><button id="preview-toggle" type="button">本文を確認</button><button id="save" type="submit" class="primary">保存する</button></div>
+    <div class="publish-row"><span>公開設定：<span id="post-status" class="status-pill" data-published="false">下書き</span></span><button id="unpublish-post" type="button" hidden>下書きへ戻す</button><span id="save-state" class="help" role="status"></span></div>
+    <p id="publish-help" class="help">「保存する」で下書きを保存し、「公開する」でサイトに公開する。公開サイトへの反映には数分かかる。</p>
+    <div class="editor-actions"><button id="delete-post" type="button" class="danger" hidden>削除</button><button id="preview-toggle" type="button">本文を確認</button><div class="toolbar"><button id="save" type="submit">保存する</button><button id="publish-post" type="submit" class="primary">公開する</button></div></div>
   </form>
   <section id="preview" hidden aria-label="本文の確認"><h2 class="post-title" id="preview-title"></h2><div id="preview-content" class="post-body"></div></section>
 </section>

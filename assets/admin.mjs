@@ -73,11 +73,22 @@ async function operation(action) {
   try { await action(); } catch (error) { notice(error.message, true); }
   finally { controls.forEach((el,i) => el.disabled = states[i]); busy = false; }
 }
+function renderPublishState() {
+  const published = current?.post.status === 'published';
+  $('post-status').textContent = published ? '公開' : '下書き';
+  $('post-status').dataset.published = String(published);
+  $('unpublish-post').hidden = !published;
+  $('publish-post').textContent = published ? '公開を更新する' : '公開する';
+  $('publish-help').textContent = published
+    ? '公開済みの日記は「保存する」でも変更が公開サイトに反映される。反映には数分かかる。'
+    : '「保存する」で下書きを保存し、「公開する」でサイトに公開する。公開サイトへの反映には数分かかる。';
+}
 function editPost(row = null) {
   current = row;
   const p = row?.post;
   editorId = p?.id ?? crypto.randomUUID();
-  $('title').value = p?.title ?? ''; $('entry-date').value = p?.entryDate ?? today(); $('category').value = p?.category ?? ''; $('content').value = p?.content ?? ''; $('published').checked = p?.status === 'published';
+  $('title').value = p?.title ?? ''; $('entry-date').value = p?.entryDate ?? today(); $('category').value = p?.category ?? ''; $('content').value = p?.content ?? '';
+  renderPublishState();
   $('editor-title').textContent = p ? '日記を編集する' : '日記を書く'; $('delete-post').hidden = !p; $('preview').hidden = true; $('preview-toggle').textContent = '本文を確認';
   dirty = false; $('save-state').textContent = ''; notice(''); view('editor'); $('title').focus();
 }
@@ -152,15 +163,30 @@ $('profile-preview-toggle').addEventListener('click', () => {
 $('filter').addEventListener('change',renderList); $('search').addEventListener('input',renderList);
 $('refresh').addEventListener('click', () => operation(async () => { notice('記事を読み込んでいる…'); rows = await store.list(); renderList(); notice('最新の記事を読み込んだ。'); }));
 $('editor-form').addEventListener('input', () => { dirty = true; $('save-state').textContent = '未保存'; });
-$('editor-form').addEventListener('submit', e => { e.preventDefault(); operation(async () => {
+async function savePost(status) {
   const timestamp = new Date().toISOString();
-  const post = { id:editorId, title:$('title').value.trim(), entryDate:$('entry-date').value, category:$('category').value.trim(), content:$('content').value.replace(/\r\n?/g,'\n'), status:$('published').checked ? 'published' : 'draft', createdAt:current?.post.createdAt ?? timestamp, updatedAt:timestamp };
+  const wasPublished = current?.post.status === 'published';
+  const post = { id:editorId, title:$('title').value.trim(), entryDate:$('entry-date').value, category:$('category').value.trim(), content:$('content').value.replace(/\r\n?/g,'\n'), status, createdAt:current?.post.createdAt ?? timestamp, updatedAt:timestamp };
   notice('保存している…');
   const result = await store.save(post,current?.sha);
   current = {post,sha:result.content.sha}; rows = [...rows.filter(r => r.post.id !== post.id),current];
   dirty = false; $('save-state').textContent = '保存済み'; $('delete-post').hidden = false; $('editor-title').textContent = '日記を編集する';
-  notice(post.status === 'published' ? '原本に保存した。公開サイトへの反映は「公開の反映状況」で確認できる。' : '下書きを原本に保存した。以前の公開記事を下書きにした場合、サイトから消えるまで数分かかる。');
-}); });
+  renderPublishState();
+  notice(status === 'published'
+    ? '公開する内容を保存した。サイトへの反映には数分かかる。一覧の「公開の反映状況」で確認できる。'
+    : wasPublished ? '下書きに戻して保存した。公開サイトから消えるまで数分かかる。' : '下書きを保存した。「公開する」を押すまでサイトには公開されない。');
+}
+$('editor-form').addEventListener('submit', e => {
+  e.preventDefault();
+  // Enter and submissions without an explicit publish button preserve the saved status.
+  const status = e.submitter === $('publish-post') ? 'published' : current?.post.status ?? 'draft';
+  operation(() => savePost(status));
+});
+$('unpublish-post').addEventListener('click', () => {
+  if (busy || current?.post.status !== 'published' || !$('editor-form').reportValidity()) return;
+  if (!confirm('編集内容を保存して、この日記を下書きに戻す？ 公開サイトから消えるまで数分かかる。')) return;
+  operation(() => savePost('draft'));
+});
 $('delete-post').addEventListener('click', () => {
   if (!current || !confirm('この日記を削除する？ 公開記事の場合、サイトからも削除される。')) return;
   operation(async () => { await store.remove(current.post,current.sha); rows = rows.filter(r => r.post.id !== current.post.id); current = null; dirty = false; $('editor-form').reset(); renderList(); view('dashboard'); notice('削除した。公開サイトには数分後に反映される。'); });
