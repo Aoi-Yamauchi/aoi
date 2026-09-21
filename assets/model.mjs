@@ -10,6 +10,11 @@ export function validateProfile(input) {
     if (typeof input[key] !== 'string' || input[key].length > max) throw new Error('プロフィールの文字数または形式が不正');
     profile[key] = input[key].replace(/\r\n?/g, '\n');
   }
+  // Existing profiles keep the configured title until a name is saved here.
+  if (input.siteTitle !== undefined) {
+    if (typeof input.siteTitle !== 'string' || !input.siteTitle.trim() || input.siteTitle.length > 100 || /[\u0000-\u001f\u007f]/.test(input.siteTitle)) throw new Error('日記の名前は1〜100文字で、改行せずに入力してほしい。');
+    profile.siteTitle = input.siteTitle.trim();
+  }
   return profile;
 }
 export function validatePost(input) {
