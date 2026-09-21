@@ -2,7 +2,9 @@ import { GitHubStore } from './github.mjs';
 import { PasswordVault, validatePassword } from './vault.mjs';
 import { markdownZip } from './export.mjs';
 import { today, validateConfig, validateProfile } from './model.mjs';
+import { initBodyEditor } from './editor.mjs';
 const $ = id => document.getElementById(id);
+const bodyEditor = initBodyEditor($('content'), $('content-count'));
 let store, config, vault, rows = [], current = null, profileCurrent = null, editorId, dirty = false, busy = false, sessionEpoch = 0;
 function notice(text, error = false) { $('notice').textContent = text; $('notice').className = error ? 'form-error' : 'notice'; }
 function view(name) {
@@ -30,6 +32,7 @@ function clearSession() {
   sessionEpoch++;
   store?.disconnect(); store = null; rows = []; current = null; profileCurrent = null; dirty = false;
   for (const id of ['editor-form','profile-form','password-form','unlock-form','setup-form','temporary-form']) $(id).reset();
+  bodyEditor.refresh();
   for (const id of ['preview-content','preview-title','post-list','about-preview','profile-name-preview','bio-preview']) $(id).replaceChildren();
   $('search').value = ''; $('filter').value = 'all';
 }
@@ -90,7 +93,7 @@ function editPost(row = null) {
   $('title').value = p?.title ?? ''; $('entry-date').value = p?.entryDate ?? today(); $('category').value = p?.category ?? ''; $('content').value = p?.content ?? '';
   renderPublishState();
   $('editor-title').textContent = p ? '日記を編集する' : '日記を書く'; $('delete-post').hidden = !p; $('preview').hidden = true; $('preview-toggle').textContent = '本文を確認';
-  dirty = false; $('save-state').textContent = ''; notice(''); view('editor'); $('title').focus();
+  dirty = false; $('save-state').textContent = ''; notice(''); view('editor'); bodyEditor.refresh(); $('title').focus();
 }
 $('setup-form').addEventListener('submit', e => { e.preventDefault(); operation(async () => {
   const token = $('token').value.trim(); $('token').value = '';
