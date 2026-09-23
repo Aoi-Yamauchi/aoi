@@ -193,6 +193,17 @@ input[type=checkbox] { width: 1rem; height: 1rem; accent-color: var(--foreground
 .link-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; font-size: .8rem; }
 .link-remove { margin-left: auto; color: var(--destructive); }
 .links-preview { display: grid; gap: .55rem; padding: 0; list-style: none; overflow-wrap: anywhere; }
+.public-search-form { display: grid; gap: .9rem; max-width: 42rem; }
+.public-search-form input { min-width: 0; }
+.public-search-actions { display: flex; flex-wrap: wrap; gap: .6rem; }
+.public-search-status { margin: 1.8rem 0 0; font-size: .88rem; overflow-wrap: anywhere; }
+.public-search-results { max-width: 42rem; margin: 1.4rem 0; padding: 0; list-style: none; }
+.public-search-result { padding: 1.5rem 0; border-top: 1px solid var(--border); }
+.public-search-result .post-date { display: block; }
+.public-search-result .post-title { font-size: clamp(1.25rem, 2.6vw, 1.65rem); }
+.public-search-excerpt { margin: .85rem 0 0; font-family: var(--font-serif); line-height: 1.95; overflow-wrap: anywhere; }
+.public-search-category { margin: .7rem 0 0; color: var(--muted-foreground); font-size: .78rem; overflow-wrap: anywhere; }
+.public-search-result mark { background: #eee3b8; color: var(--foreground); }
 .post-body, .post-title, .profile-copy { overflow-wrap: anywhere; }
 @media (max-width: 760px) {
   .admin-row { grid-template-columns: 1fr auto; }
