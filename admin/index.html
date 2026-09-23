@@ -44,6 +44,8 @@
   <form id="profile-form" class="editor-form">
     <label class="field-group"><span class="field-label">日記の名前</span><input id="site-title" required maxlength="100" aria-describedby="site-title-help"></label>
     <p id="site-title-help" class="help">ページ上部の見出し、ブラウザのタブ、RSSに使う名前。</p>
+    <label class="field-group"><span class="field-label">日記の説明文</span><input id="site-description" maxlength="1000" aria-describedby="site-description-help"></label>
+    <p id="site-description-help" class="help">トップページなどの共有時や検索結果、RSSに使う説明文。各日記の固定リンクを共有すると、その本文の冒頭を最大300文字使う。共有先によって表示量は変わる。</p>
     <label class="field-group"><span class="field-label">ABOUT</span><textarea id="about-copy" class="short-textarea" rows="5" maxlength="2000" aria-describedby="about-help"></textarea></label>
     <p id="about-help" class="help">各ページの右側、スマートフォンでは下部に表示する紹介文。</p>
     <label class="field-group"><span class="field-label">プロフィールの名前</span><input id="profile-name" maxlength="80" aria-describedby="name-help"></label>
@@ -59,7 +61,7 @@
     <div class="editor-actions"><span id="profile-save-state" class="help"></span><button id="profile-preview-toggle" type="button">表示を確認</button><button type="submit" class="primary">保存して公開する</button></div>
     <p class="help">保存後、公開サイトへの反映には数分かかる。</p>
   </form>
-  <section id="profile-preview" class="profile-preview" aria-label="日記名と紹介文・LINKSの確認" hidden><h2 class="sidebar-title">日記の名前</h2><p id="site-title-preview" class="post-title"></p><h2 class="sidebar-title">ABOUT</h2><div id="about-preview" class="about-copy"></div><h2 class="sidebar-title">プロフィール</h2><div class="profile-copy"><h3 id="profile-name-preview" class="post-title profile-name"></h3><div id="bio-preview"></div></div><h2 class="sidebar-title">LINKS</h2><ul id="links-preview" class="links-preview"></ul></section>
+  <section id="profile-preview" class="profile-preview" aria-label="日記名と紹介文・LINKSの確認" hidden><h2 class="sidebar-title">日記の名前</h2><p id="site-title-preview" class="post-title"></p><h2 class="sidebar-title">日記の説明文</h2><p id="site-description-preview"></p><h2 class="sidebar-title">ABOUT</h2><div id="about-preview" class="about-copy"></div><h2 class="sidebar-title">プロフィール</h2><div class="profile-copy"><h3 id="profile-name-preview" class="post-title profile-name"></h3><div id="bio-preview"></div></div><h2 class="sidebar-title">LINKS</h2><ul id="links-preview" class="links-preview"></ul></section>
 </section>
 <section id="security" class="editor-card" hidden>
   <h1 class="editor-heading">パスワードの変更</h1>

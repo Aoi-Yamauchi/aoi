@@ -29,6 +29,10 @@ export function validateProfile(input) {
     if (typeof input.siteTitle !== 'string' || !input.siteTitle.trim() || input.siteTitle.length > 100 || /[\u0000-\u001f\u007f]/.test(input.siteTitle)) throw new Error('日記の名前は1〜100文字で、改行せずに入力してほしい。');
     profile.siteTitle = input.siteTitle.trim();
   }
+  if (input.siteDescription !== undefined) {
+    if (typeof input.siteDescription !== 'string' || input.siteDescription.length > 1000 || /[\u0000-\u001f\u007f]/.test(input.siteDescription)) throw new Error('日記の説明文は1000文字以内で、改行せずに入力してほしい。');
+    profile.siteDescription = input.siteDescription.trim();
+  }
   if (input.links !== undefined) profile.links = validateLinks(input.links);
   return profile;
 }

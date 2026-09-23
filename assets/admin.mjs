@@ -33,7 +33,7 @@ function clearSession() {
   store?.disconnect(); store = null; rows = []; current = null; profileCurrent = null; dirty = false;
   for (const id of ['editor-form','profile-form','password-form','unlock-form','setup-form','temporary-form']) $(id).reset();
   bodyEditor.refresh();
-  for (const id of ['preview-content','preview-title','post-list','about-preview','profile-name-preview','bio-preview','site-title-preview','profile-links','links-preview']) $(id).replaceChildren();
+  for (const id of ['preview-content','preview-title','post-list','about-preview','profile-name-preview','bio-preview','site-title-preview','site-description-preview','profile-links','links-preview']) $(id).replaceChildren();
   $('search').value = ''; $('filter').value = 'all';
 }
 async function connect(token, beforeEnter) {
@@ -133,6 +133,7 @@ $('nav-profile').addEventListener('click', () => {
     const latest = await store.readProfile();
     profileCurrent = latest;
     $('site-title').value = latest.profile.siteTitle ?? config.title;
+    $('site-description').value = latest.profile.siteDescription ?? config.description;
     $('about-copy').value = latest.profile.about; $('profile-name').value = latest.profile.name; $('profile-bio').value = latest.profile.bio;
     renderProfileLinks(latest.profile.links ?? []);
     $('profile-save-state').textContent = ''; $('profile-preview').hidden = true; $('profile-preview-toggle').textContent = '表示を確認';
@@ -215,14 +216,15 @@ $('add-profile-link').addEventListener('click', () => {
 });
 $('profile-form').addEventListener('input', markProfileDirty);
 $('profile-form').addEventListener('submit', e => { e.preventDefault(); operation(async () => {
-  const profile = validateProfile({version:1,siteTitle:$('site-title').value,about:$('about-copy').value,name:$('profile-name').value.trim(),bio:$('profile-bio').value,links:readProfileLinks()});
+  const profile = validateProfile({version:1,siteTitle:$('site-title').value,siteDescription:$('site-description').value,about:$('about-copy').value,name:$('profile-name').value.trim(),bio:$('profile-bio').value,links:readProfileLinks()});
   notice('プロフィールとLINKSを保存している…');
   const result = await store.saveProfile(profile,profileCurrent?.sha);
   profileCurrent = {profile,sha:result.content.sha}; dirty = false; $('profile-save-state').textContent = '保存済み';
   config.title = profile.siteTitle; $('site-title').value = profile.siteTitle;
+  config.description = profile.siteDescription; $('site-description').value = profile.siteDescription;
   renderProfileLinks(profile.links);
   $('admin-brand').textContent = profile.siteTitle; document.title = `管理画面 — ${profile.siteTitle}`;
-  notice('日記の名前・ABOUT・プロフィール・LINKSを原本に保存した。公開サイトへの反映には数分かかる。');
+  notice('日記の名前・説明文・ABOUT・プロフィール・LINKSを原本に保存した。公開サイトへの反映には数分かかる。');
 }); });
 $('profile-preview-toggle').addEventListener('click', () => {
   if (!$('profile-preview').hidden) { $('profile-preview').hidden = true; $('profile-preview-toggle').textContent = '表示を確認'; return; }
@@ -235,6 +237,7 @@ $('profile-preview-toggle').addEventListener('click', () => {
   }
   $('profile-preview').hidden = false; $('profile-preview-toggle').textContent = '確認を閉じる';
   $('site-title-preview').textContent = $('site-title').value.trim();
+  $('site-description-preview').textContent = $('site-description').value.trim();
   plainPreview('about-preview',$('about-copy').value); plainPreview('bio-preview',$('profile-bio').value);
   $('profile-name-preview').textContent = $('profile-name').value.trim(); $('profile-name-preview').hidden = !$('profile-name-preview').textContent;
 });
