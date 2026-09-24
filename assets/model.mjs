@@ -43,9 +43,10 @@ export function validatePost(input) {
     if (typeof input[key] !== 'string') throw new Error(`記事の ${key} が不正`);
     result[key] = input[key];
   }
-  if (!result.title.trim() || result.title.length > 200) throw new Error('題名は1〜200文字で入力');
-  if (result.content.length > MAX_CONTENT || result.category.length > 80) throw new Error('本文または分類が長すぎる');
   if (!['draft', 'published'].includes(result.status)) throw new Error('公開状態が不正');
+  if (result.title.length > 200) throw new Error('題名は200文字以内で入力');
+  if (result.status === 'published' && !result.title.trim()) throw new Error('公開するときは題名を入力してほしい。');
+  if (result.content.length > MAX_CONTENT || result.category.length > 80) throw new Error('本文または分類が長すぎる');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(result.entryDate) || !Number.isFinite(Date.parse(result.entryDate)) || new Date(result.entryDate).toISOString().slice(0, 10) !== result.entryDate) throw new Error('日付が不正');
   for (const key of ['createdAt', 'updatedAt']) {
     if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(result[key]) || !Number.isFinite(Date.parse(result[key]))) throw new Error('更新日時が不正');

@@ -2,9 +2,10 @@ import { GitHubStore } from './github.mjs';
 import { PasswordVault, validatePassword } from './vault.mjs';
 import { markdownZip } from './export.mjs';
 import { today, validateConfig, validateProfile, validateLinks, MAX_LINKS } from './model.mjs';
-import { initBodyEditor } from './editor.mjs';
+import { initBodyEditor, initBodyFindReplace } from './editor.mjs';
 const $ = id => document.getElementById(id);
 const bodyEditor = initBodyEditor($('content'), $('content-count'));
+const bodyFind = initBodyFindReplace($('content'), bodyEditor);
 let store, config, vault, rows = [], current = null, profileCurrent = null, editorId, dirty = false, busy = false, sessionEpoch = 0;
 function notice(text, error = false) { $('notice').textContent = text; $('notice').className = error ? 'form-error' : 'notice'; }
 function view(name) {
@@ -32,7 +33,7 @@ function clearSession() {
   sessionEpoch++;
   store?.disconnect(); store = null; rows = []; current = null; profileCurrent = null; dirty = false;
   for (const id of ['editor-form','profile-form','password-form','unlock-form','setup-form','temporary-form']) $(id).reset();
-  bodyEditor.refresh();
+  bodyEditor.refresh(); bodyFind.reset();
   for (const id of ['preview-content','preview-title','post-list','about-preview','profile-name-preview','bio-preview','site-title-preview','site-description-preview','profile-links','links-preview']) $(id).replaceChildren();
   $('search').value = ''; $('filter').value = 'all';
 }
@@ -61,7 +62,7 @@ function renderList() {
   for (const row of filtered) {
     const p = row.post, item = document.createElement('div'); item.className = 'admin-row';
     const date = document.createElement('time'); date.dateTime = p.entryDate; date.textContent = p.entryDate; date.className = 'archive-date';
-    const title = document.createElement('span'); title.textContent = p.title; title.className = 'admin-row-title';
+    const title = document.createElement('span'); title.textContent = p.title.trim() ? p.title : '（題名なし）'; title.className = 'admin-row-title';
     const status = document.createElement('span'); status.textContent = p.status === 'published' ? '公開' : '下書き'; status.className = 'status-pill'; status.dataset.published = String(p.status === 'published');
     const edit = document.createElement('button'); edit.textContent = '編集'; edit.addEventListener('click',() => editPost(row));
     item.append(date,title,status,edit); list.append(item);
@@ -74,7 +75,7 @@ async function operation(action) {
   const controls = [...document.querySelectorAll('button,input,textarea,select')];
   const states = controls.map(el => el.disabled); controls.forEach(el => el.disabled = true);
   try { await action(); } catch (error) { notice(error.message, true); }
-  finally { controls.forEach((el,i) => el.disabled = states[i]); busy = false; updateLinkControls(); }
+  finally { controls.forEach((el,i) => el.disabled = states[i]); busy = false; updateLinkControls(); bodyFind.updateControls(); }
 }
 function renderPublishState() {
   const published = current?.post.status === 'published';
@@ -93,7 +94,7 @@ function editPost(row = null) {
   $('title').value = p?.title ?? ''; $('entry-date').value = p?.entryDate ?? today(); $('category').value = p?.category ?? ''; $('content').value = p?.content ?? '';
   renderPublishState();
   $('editor-title').textContent = p ? '日記を編集する' : '日記を書く'; $('delete-post').hidden = !p; $('preview').hidden = true; $('preview-toggle').textContent = '本文を確認';
-  dirty = false; $('save-state').textContent = ''; notice(''); view('editor'); bodyEditor.refresh(); $('title').focus();
+  dirty = false; $('save-state').textContent = ''; notice(''); view('editor'); bodyEditor.refresh(); bodyFind.reset(); $('title').focus();
 }
 $('setup-form').addEventListener('submit', e => { e.preventDefault(); operation(async () => {
   const token = $('token').value.trim(); $('token').value = '';
@@ -243,7 +244,11 @@ $('profile-preview-toggle').addEventListener('click', () => {
 });
 $('filter').addEventListener('change',renderList); $('search').addEventListener('input',renderList);
 $('refresh').addEventListener('click', () => operation(async () => { notice('記事を読み込んでいる…'); rows = await store.list(); renderList(); notice('最新の記事を読み込んだ。'); }));
-$('editor-form').addEventListener('input', () => { dirty = true; $('save-state').textContent = '未保存'; });
+$('editor-form').addEventListener('input', event => {
+  if (event.target.closest('#body-find-panel')) return;
+  dirty = true; $('save-state').textContent = '未保存';
+  $('preview').hidden = true; $('preview-toggle').textContent = '本文を確認';
+});
 async function savePost(status) {
   const timestamp = new Date().toISOString();
   const wasPublished = current?.post.status === 'published';
@@ -259,8 +264,12 @@ async function savePost(status) {
 }
 $('editor-form').addEventListener('submit', e => {
   e.preventDefault();
+  if ($('body-find-panel').contains(document.activeElement)) return;
   // Enter and submissions without an explicit publish button preserve the saved status.
   const status = e.submitter === $('publish-post') ? 'published' : current?.post.status ?? 'draft';
+  if (status === 'published' && !$('title').value.trim()) {
+    notice('公開するときは題名を入力してほしい。',true); $('title').focus(); return;
+  }
   operation(() => savePost(status));
 });
 $('unpublish-post').addEventListener('click', () => {
@@ -274,7 +283,7 @@ $('delete-post').addEventListener('click', () => {
 });
 $('preview-toggle').addEventListener('click', () => {
   $('preview').hidden = !$('preview').hidden; $('preview-toggle').textContent = $('preview').hidden ? '本文を確認' : '確認を閉じる';
-  $('preview-title').textContent = $('title').value; $('preview-content').replaceChildren();
+  $('preview-title').textContent = $('title').value.trim() ? $('title').value : '（題名なし）'; $('preview-content').replaceChildren();
   for (const text of $('content').value.split(/\n{2,}/)) { const p = document.createElement('p'); p.textContent = text; $('preview-content').append(p); }
 });
 $('export').addEventListener('click', () => operation(async () => {

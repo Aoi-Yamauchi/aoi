@@ -153,6 +153,16 @@ input:not([type=checkbox]), textarea, select { width: 100%; border: 1px solid va
 textarea { resize: vertical; min-height: 20rem; font-family: var(--font-serif); line-height: 2; }
 #content { height: clamp(16rem, 45vh, 28rem); height: clamp(16rem, 45dvh, 28rem); min-height: 12rem; overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; white-space: pre-wrap; overflow-wrap: break-word; }
 .body-footer { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.body-editor-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.body-editor-heading button { font-size: .8rem; }
+.body-find-panel { display: grid; gap: .75rem; padding: 1rem; margin: .3rem 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--secondary); }
+.body-find-fields { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .8rem; }
+.body-find-fields input { min-width: 0; }
+.body-find-option { display: flex; align-items: center; gap: .5rem; font-size: .8rem; }
+.body-find-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; font-size: .78rem; }
+#body-find-count { flex-basis: 100%; }
+#body-find-message:empty { display: none; }
+@media (max-width: 760px) { .body-find-fields { grid-template-columns: minmax(0, 1fr); } }
 #content-count { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .body-measure { position: fixed; top: 0; left: 0; height: 0; overflow: hidden; visibility: hidden; pointer-events: none; }
 input[type=checkbox] { width: 1rem; height: 1rem; accent-color: var(--foreground); }

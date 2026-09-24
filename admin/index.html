@@ -30,9 +30,17 @@
 <section id="editor" class="editor-card" hidden>
   <div class="admin-title-row"><h1 id="editor-title">日記を書く</h1><button id="back">一覧へ戻る</button></div>
   <form id="editor-form" class="editor-form">
-    <label class="field-group"><span class="field-label">題名</span><input id="title" required maxlength="200"></label>
+    <label class="field-group"><span class="field-label">題名</span><input id="title" maxlength="200" aria-describedby="title-help"></label>
+    <p id="title-help" class="help">下書きでは空欄にできる。公開するときは題名が必要。</p>
     <div class="field-row"><label class="field-group"><span class="field-label">日付</span><input id="entry-date" type="date" required></label><label class="field-group"><span class="field-label">分類</span><input id="category" maxlength="80" placeholder="日記"></label></div>
-    <div class="field-group"><label for="content" class="field-label">本文</label><textarea id="content" rows="12" maxlength="150000" aria-describedby="content-count content-count-help" placeholder="ここに、その日のことを書く。"></textarea><div class="body-footer"><span id="content-count-help" class="help">改行を除き、空白を含む</span><span id="content-count" class="help">0文字</span></div></div>
+    <div class="field-group"><div class="body-editor-heading"><label for="content" class="field-label">本文</label><button id="body-find-toggle" type="button" aria-expanded="false" aria-controls="body-find-panel">検索・置換</button></div>
+      <section id="body-find-panel" class="body-find-panel" aria-label="本文の検索と置換" hidden>
+        <div class="body-find-fields"><label class="field-group"><span class="field-label">検索する文字列</span><input id="body-find-query" maxlength="1000" autocomplete="off" spellcheck="false"></label><label class="field-group"><span class="field-label">置換後の文字列</span><input id="body-find-replacement" maxlength="150000" autocomplete="off" spellcheck="false"></label></div>
+        <label class="body-find-option"><input id="body-find-case" type="checkbox" checked>英字の大小を区別する</label>
+        <div class="body-find-actions"><span id="body-find-count" class="help" role="status" aria-live="polite"></span><button id="body-find-previous" type="button">前へ</button><button id="body-find-next" type="button">次へ</button><button id="body-find-replace" type="button">1件置換</button><button id="body-find-all" type="button">すべて置換</button><button id="body-find-undo" type="button">直前の置換を戻す</button><button id="body-find-close" type="button">閉じる</button></div>
+        <p class="help">空白や記号も入力どおりに検索する。置換後を空欄にすると削除する。</p><p id="body-find-message" class="help" role="status" aria-live="polite"></p>
+      </section>
+      <textarea id="content" rows="12" maxlength="150000" aria-describedby="content-count content-count-help" placeholder="ここに、その日のことを書く。"></textarea><div class="body-footer"><span id="content-count-help" class="help">改行を除き、空白を含む</span><span id="content-count" class="help">0文字</span></div></div>
     <div class="publish-row"><span>公開設定：<span id="post-status" class="status-pill" data-published="false">下書き</span></span><button id="unpublish-post" type="button" hidden>下書きへ戻す</button><span id="save-state" class="help" role="status"></span></div>
     <p id="publish-help" class="help">「保存する」で下書きを保存し、「公開する」でサイトに公開する。公開サイトへの反映には数分かかる。</p>
     <div class="editor-actions"><button id="delete-post" type="button" class="danger" hidden>削除</button><button id="preview-toggle" type="button">本文を確認</button><div class="toolbar"><button id="save" type="submit">保存する</button><button id="publish-post" type="submit" class="primary">公開する</button></div></div>
