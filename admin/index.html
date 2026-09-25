@@ -23,7 +23,8 @@
 </section>
 <section id="dashboard" hidden>
   <div class="admin-title-row"><h1>日記</h1><button id="new-post" class="primary">日記を書く</button></div>
-  <div class="toolbar list-toolbar"><label>表示 <select id="filter"><option value="all">すべて</option><option value="published">公開</option><option value="draft">下書き</option></select></label><label class="search-field">検索 <input id="search" type="search" placeholder="題名・本文・分類"></label><button id="refresh">再読み込み</button><button id="export">Markdown一括出力</button><a id="actions-link" target="_blank" rel="noopener">公開の反映状況</a></div>
+  <div class="toolbar list-toolbar"><label>表示 <select id="filter"><option value="all">すべて</option><option value="published">公開</option><option value="draft">下書き</option></select></label><label>日付順 <select id="sort-order"><option value="newest">新しい順</option><option value="oldest">古い順</option></select></label><label class="search-field">検索 <input id="search" type="search" placeholder="題名・本文・分類"></label><button id="refresh">再読み込み</button><button id="export">Markdown一括出力</button><a id="actions-link" target="_blank" rel="noopener">公開の反映状況</a></div>
+  <p class="help">日記の日付で並べ替える。文字数は本文のみで、改行を除き、空白を含む。</p>
   <p class="help">一括出力は、下書きを含む全記事をMarkdownのZIPファイルにする。</p>
   <div id="post-list" class="admin-list"></div>
 </section>

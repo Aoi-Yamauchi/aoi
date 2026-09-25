@@ -118,8 +118,9 @@ button, input, textarea { font: inherit; }
 .admin-title-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 2.6rem 0 1.2rem; }
 .admin-title-row h1, .editor-heading { margin: 0; font-family: var(--font-serif); font-size: clamp(1.7rem, 3vw, 2.4rem); font-weight: 500; }
 .admin-list { border-top: 1px solid var(--border); }
-.admin-row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) 6.5rem auto; align-items: center; gap: 1rem; min-height: 4.4rem; border-bottom: 1px solid var(--border); }
+.admin-row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) 5.5rem 6.5rem auto; align-items: center; gap: 1rem; min-height: 4.4rem; border-bottom: 1px solid var(--border); }
 .admin-row-title { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.admin-row-count { color: var(--muted-foreground); font-size: .8rem; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .status-pill { width: fit-content; padding: 0.15rem 0.55rem; border: 1px solid var(--border); border-radius: 999px; color: var(--muted-foreground); font-size: 0.74rem; }
 .status-pill[data-published="true"] { border-color: #9a9a92; color: var(--foreground); }
 .editor-card { max-width: 50rem; margin: 2.5rem auto 0; }
@@ -171,7 +172,8 @@ input[type=checkbox] { width: 1rem; height: 1rem; accent-color: var(--foreground
 .list-toolbar { margin-bottom: 1rem; }
 .list-toolbar label { display: flex; align-items: center; gap: .5rem; }
 .list-toolbar select { width: auto; }
-.search-field { flex: 1; min-width: 12rem; }
+.search-field { flex: 1; min-width: 12rem; white-space: nowrap; }
+.search-field input { min-width: 0; }
 .help { font-size: .8rem; color: var(--muted-foreground); margin: 0; }
 .notice { font-size: .88rem; }
 #notice { min-height: 1.8em; margin: 1rem 0; overflow-wrap: anywhere; }
@@ -216,10 +218,11 @@ input[type=checkbox] { width: 1rem; height: 1rem; accent-color: var(--foreground
 .public-search-result mark { background: #eee3b8; color: var(--foreground); }
 .post-body, .post-title, .profile-copy { overflow-wrap: anywhere; }
 @media (max-width: 760px) {
-  .admin-row { grid-template-columns: 1fr auto; }
+  .admin-row { grid-template-columns: minmax(0, 1fr) auto; }
   .link-fields { grid-template-columns: minmax(0, 1fr); }
   .admin-row .archive-date { grid-column: 1; }
   .admin-row .admin-row-title { grid-row: 2; grid-column: 1; }
+  .admin-row .admin-row-count { grid-row: 3; grid-column: 1; text-align: left; }
   .admin-row .status-pill { display: inline-block; grid-row: 1; grid-column: 2; }
   .admin-row button { grid-row: 2; grid-column: 2; }
   .admin-header { align-items: flex-start; }

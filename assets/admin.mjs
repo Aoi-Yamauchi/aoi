@@ -1,11 +1,12 @@
 import { GitHubStore } from './github.mjs';
 import { PasswordVault, validatePassword } from './vault.mjs';
 import { markdownZip } from './export.mjs';
-import { today, validateConfig, validateProfile, validateLinks, MAX_LINKS } from './model.mjs';
-import { initBodyEditor, initBodyFindReplace } from './editor.mjs';
+import { today, validateConfig, validateProfile, validateLinks, MAX_LINKS, comparePosts } from './model.mjs';
+import { initBodyEditor, initBodyFindReplace, countCharacters } from './editor.mjs';
 const $ = id => document.getElementById(id);
 const bodyEditor = initBodyEditor($('content'), $('content-count'));
 const bodyFind = initBodyFindReplace($('content'), bodyEditor);
+const postCounts = new WeakMap(), countFormat = new Intl.NumberFormat('ja-JP');
 let store, config, vault, rows = [], current = null, profileCurrent = null, editorId, dirty = false, busy = false, sessionEpoch = 0;
 function notice(text, error = false) { $('notice').textContent = text; $('notice').className = error ? 'form-error' : 'notice'; }
 function view(name) {
@@ -35,7 +36,7 @@ function clearSession() {
   for (const id of ['editor-form','profile-form','password-form','unlock-form','setup-form','temporary-form']) $(id).reset();
   bodyEditor.refresh(); bodyFind.reset();
   for (const id of ['preview-content','preview-title','post-list','about-preview','profile-name-preview','bio-preview','site-title-preview','site-description-preview','profile-links','links-preview']) $(id).replaceChildren();
-  $('search').value = ''; $('filter').value = 'all';
+  $('search').value = ''; $('filter').value = 'all'; $('sort-order').value = 'newest';
 }
 async function connect(token, beforeEnter) {
   if (!config) throw new Error('接続設定を読み込めなかった。ページを再読み込みしてほしい。');
@@ -59,13 +60,18 @@ function renderList() {
   const filter = $('filter').value, query = $('search').value.toLocaleLowerCase();
   const list = $('post-list'); list.replaceChildren();
   const filtered = rows.filter(({post:p}) => (filter === 'all' || p.status === filter) && [p.title,p.content,p.category].some(s => s.toLocaleLowerCase().includes(query)));
+  const direction = $('sort-order').value === 'oldest' ? -1 : 1;
+  filtered.sort((a,b) => direction * comparePosts(a.post,b.post));
   for (const row of filtered) {
     const p = row.post, item = document.createElement('div'); item.className = 'admin-row';
     const date = document.createElement('time'); date.dateTime = p.entryDate; date.textContent = p.entryDate; date.className = 'archive-date';
     const title = document.createElement('span'); title.textContent = p.title.trim() ? p.title : '（題名なし）'; title.className = 'admin-row-title';
+    if (!postCounts.has(p)) postCounts.set(p,countCharacters(p.content));
+    const count = document.createElement('span'); count.className = 'admin-row-count';
+    count.textContent = `${countFormat.format(postCounts.get(p))}文字`; count.setAttribute('aria-label',`本文 ${count.textContent}`);
     const status = document.createElement('span'); status.textContent = p.status === 'published' ? '公開' : '下書き'; status.className = 'status-pill'; status.dataset.published = String(p.status === 'published');
     const edit = document.createElement('button'); edit.textContent = '編集'; edit.addEventListener('click',() => editPost(row));
-    item.append(date,title,status,edit); list.append(item);
+    item.append(date,title,count,status,edit); list.append(item);
   }
   if (!filtered.length) { const empty = document.createElement('p'); empty.textContent = rows.length ? '該当する日記がない。' : 'まだ日記がない。「日記を書く」から始める。'; list.append(empty); }
 }
@@ -242,7 +248,7 @@ $('profile-preview-toggle').addEventListener('click', () => {
   plainPreview('about-preview',$('about-copy').value); plainPreview('bio-preview',$('profile-bio').value);
   $('profile-name-preview').textContent = $('profile-name').value.trim(); $('profile-name-preview').hidden = !$('profile-name-preview').textContent;
 });
-$('filter').addEventListener('change',renderList); $('search').addEventListener('input',renderList);
+$('filter').addEventListener('change',renderList); $('search').addEventListener('input',renderList); $('sort-order').addEventListener('change',renderList);
 $('refresh').addEventListener('click', () => operation(async () => { notice('記事を読み込んでいる…'); rows = await store.list(); renderList(); notice('最新の記事を読み込んだ。'); }));
 $('editor-form').addEventListener('input', event => {
   if (event.target.closest('#body-find-panel')) return;
